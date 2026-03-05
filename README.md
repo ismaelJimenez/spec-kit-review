@@ -101,10 +101,10 @@ If project-specific guidelines exist (`.specify/memory/constitution.md`, `CLAUDE
 ## Recommended Workflow
 
 ```
-1. Write code on feature branch
-2. Run full review:         /speckit.review.run
+1. Implement changes:       /speckit.implement
+2. Run full review:         /speckit.review
 3. Fix critical issues
-4. Re-run targeted review:  /speckit.review.run code errors
+4. Re-run targeted review:  /speckit.review code errors
 5. Verify fixes resolved
 6. Create PR
 ```
@@ -115,8 +115,8 @@ If you also use the [Verify Extension](https://github.com/ismaelJimenez/spec-kit
 
 ```
 1. Implement changes:       /speckit.implement
-2. Verify spec alignment:   /speckit.verify.run
-3. Run PR review:           /speckit.review.run
+2. Verify spec alignment:   /speckit.verify
+3. Run PR review:           /speckit.review
 4. Fix issues and iterate
 ```
 
