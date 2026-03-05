@@ -532,13 +532,14 @@ Describe "detect-changed-files.ps1" {
             }
         }
 
-        It "handles filenames with double quotes in JSON mode" {
+        It "handles filenames with double quotes in JSON mode" -Skip:($IsWindows -or $env:OS -eq 'Windows_NT') {
             $tmp = New-TempDir
             try {
                 Initialize-GitRepo -Dir $tmp
                 Push-Location $tmp
 
                 # Create a file with a double quote in its name
+                # (skipped on Windows — NTFS does not allow " in filenames)
                 $fname = 'file"quote.txt'
                 [System.IO.File]::WriteAllText((Join-Path $tmp $fname), "content")
                 git add .
