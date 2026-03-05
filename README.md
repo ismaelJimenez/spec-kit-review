@@ -146,6 +146,10 @@ This extension is AI-agnostic — it works with any AI agent supported by spec-k
 
 **Solution:** Make some code changes first. On a feature branch, commit changes. On the default branch, stage or modify files.
 
+## Acknowledgments
+
+The first version of this extension was modeled after the [PR Review Toolkit](https://github.com/anthropics/claude-code/tree/main/plugins/pr-review-toolkit) plugin for Claude Code by Anthropic.
+
 ## License
 
 MIT License — see [LICENSE](LICENSE) file
