@@ -122,12 +122,6 @@ If you also use the [Verify Extension](https://github.com/ismaelJimenez/spec-kit
 
 The verify extension validates that your implementation matches specification artifacts (spec.md, plan.md, tasks.md). The review extension then performs broader code quality analysis. When both are installed, the verify extension offers a handoff to run the review automatically after verification completes.
 
-> **Note**: There is currently no `after_verify` hook event in spec-kit (hooks are limited to core command lifecycle events). The integration is achieved via the verify extension's `handoffs` mechanism, which suggests running the review after verification.
-
-## Cross-AI Compatibility
-
-This extension is AI-agnostic — it works with any AI agent supported by spec-kit (Claude Code, GitHub Copilot, Cursor, Gemini CLI, Windsurf, Kiro, Amp, Roo Code, and more). All prompts use generic language with no vendor-specific references.
-
 ## Troubleshooting
 
 ### Issue: Command not available
