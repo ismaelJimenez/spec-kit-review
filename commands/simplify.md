@@ -31,7 +31,13 @@ You are an expert code simplification specialist focused on enhancing code clari
 
 If **CHANGED_FILES** was provided by the `/speckit.review.run` orchestrator, use that list directly.
 
-Otherwise, run the `detect-changed-files` script with `--json` to auto-detect changed files. The user may specify different files or scope to review.
+Otherwise:
+
+> **MANDATORY**: You **MUST** execute the `detect-changed-files` script with `--json` to identify changed files.
+> **DO NOT** manually run `git diff`, `git status`, `git log`, or any other git commands to detect changes yourself.
+> The script handles branch detection, merge-base resolution, and edge cases that manual commands will miss or get wrong.
+
+The user may specify different files or scope to review — in that case, use the user-specified files instead.
 
 ## Step 2: Load Project Guidelines
 
