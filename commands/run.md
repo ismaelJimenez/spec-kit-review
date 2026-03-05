@@ -135,3 +135,20 @@ Output the final report in the following Markdown format:
    4. Re-run review after fixes
 ```
 
+## Operating Principles
+
+### Context Efficiency
+
+- **Minimal high-signal tokens**: Focus on actionable findings, not exhaustive documentation
+- **Deterministic results**: Rerunning without changes should produce consistent IDs and counts
+
+### Analysis Guidelines
+
+- **NEVER modify files** (this is read-only analysis)
+- **NEVER hallucinate missing sections** (if absent, report them accurately)
+- **Use examples over exhaustive rules** (cite specific instances, not generic patterns)
+- **Report zero issues gracefully** (emit success report with coverage statistics)
+
+### Idempotency by Design
+
+The command produces deterministic output — running verification twice on the same state yields the same report. No counters, timestamp-dependent logic, or accumulated state affects findings. The report is fully regenerated on each run.
