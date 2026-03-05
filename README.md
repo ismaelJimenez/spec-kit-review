@@ -4,7 +4,7 @@ Post-implementation code review with specialized agents for code quality, commen
 
 ## Features
 
-- **Coordinator** (`/speckit.review.run`): Orchestrates all agents, produces a consolidated report
+- **Coordinator** (`/speckit.review`): Orchestrates all agents, produces a consolidated report
 - **Code Reviewer** (`/speckit.review.code`): Project guideline compliance, bug detection, code quality
 - **Comment Analyzer** (`/speckit.review.comments`): Comment accuracy, documentation completeness, comment rot
 - **Test Analyzer** (`/speckit.review.tests`): Behavioral coverage, critical gap identification, test resilience
@@ -42,7 +42,7 @@ specify extension list
 Run all specialized agents against your changes and get a consolidated report:
 
 ```
-/speckit.review.run
+/speckit.review
 ```
 
 The coordinator automatically detects changed files via git diff:
@@ -54,9 +54,9 @@ The coordinator automatically detects changed files via git diff:
 Run only specific agents by passing aspect names:
 
 ```
-/speckit.review.run tests errors      # Only test and error handling analysis
-/speckit.review.run code              # Only code quality review
-/speckit.review.run comments simplify # Only comment analysis and simplification
+/speckit.review tests errors      # Only test and error handling analysis
+/speckit.review code              # Only code quality review
+/speckit.review comments simplify # Only comment analysis and simplification
 ```
 
 Valid aspects: `code`, `comments`, `tests`, `errors`, `types`, `simplify`, `all`
