@@ -55,6 +55,12 @@ Describe "detect-changed-files.ps1" {
             $LASTEXITCODE | Should -Be 0
             ($result -join "`n") | Should -Match "Usage"
         }
+
+        It "shows usage with -h" {
+            $result = & pwsh -NoProfile -File $Script -h
+            $LASTEXITCODE | Should -Be 0
+            ($result -join "`n") | Should -Match "Usage"
+        }
     }
 
     # ──────────────────────────────────────────────
@@ -68,8 +74,8 @@ Describe "detect-changed-files.ps1" {
                 Push-Location $tmp
                 $result = & pwsh -NoProfile -File $Script 2>&1
                 $LASTEXITCODE | Should -Be 1
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -81,8 +87,8 @@ Describe "detect-changed-files.ps1" {
                 $result = & pwsh -NoProfile -File $Script -Json 2>&1
                 $LASTEXITCODE | Should -Be 1
                 ($result -join "`n") | Should -Match '"error"'
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -100,8 +106,8 @@ Describe "detect-changed-files.ps1" {
                 Push-Location $tmp
                 & pwsh -NoProfile -File $Script 2>&1
                 $LASTEXITCODE | Should -Be 2
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -115,8 +121,8 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 2
                 $json = $result | ConvertFrom-Json
                 $json.message | Should -Match "No changes detected"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -142,8 +148,8 @@ Describe "detect-changed-files.ps1" {
                 $json = $result | ConvertFrom-Json
                 $json.mode | Should -Match "Working directory changes"
                 $json.changed_files | Should -Contain "tracked.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -167,8 +173,8 @@ Describe "detect-changed-files.ps1" {
                 $json = $result | ConvertFrom-Json
                 $json.mode | Should -Match "Working directory changes"
                 $json.changed_files | Should -Contain "staged.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -195,8 +201,8 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 0
                 $json = $result | ConvertFrom-Json
                 ($json.changed_files | Where-Object { $_ -eq "both.txt" }).Count | Should -Be 1
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -223,8 +229,8 @@ Describe "detect-changed-files.ps1" {
                 $json.branch | Should -Be "feature-branch"
                 $json.mode | Should -Match "Feature branch diff"
                 $json.changed_files | Should -Contain "feature.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -250,8 +256,58 @@ Describe "detect-changed-files.ps1" {
                 $json = $result | ConvertFrom-Json
                 $json.changed_files | Should -Contain "keep.txt"
                 $json.changed_files | Should -Not -Contain "delete-me.txt"
-                Pop-Location
             } finally {
+                Pop-Location
+                Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+            }
+        }
+
+        It "detects multiple changed files" {
+            $tmp = New-TempDir
+            try {
+                Initialize-GitRepoWithRemote -Dir $tmp
+                Push-Location $tmp
+                git checkout --quiet -b multi-files
+                "a" | Set-Content "file-a.txt"
+                "b" | Set-Content "file-b.txt"
+                $subDir = Join-Path $tmp "sub"
+                New-Item -ItemType Directory -Path $subDir -Force | Out-Null
+                "c" | Set-Content (Join-Path $subDir "file-c.txt")
+                git add .
+                git commit --quiet -m "Add multiple files"
+
+                $result = & pwsh -NoProfile -File $Script -Json 2>&1
+                $LASTEXITCODE | Should -Be 0
+                $json = $result | ConvertFrom-Json
+                $json.changed_files | Should -Contain "file-a.txt"
+                $json.changed_files | Should -Contain "file-b.txt"
+                $json.changed_files | Should -Contain "sub/file-c.txt"
+            } finally {
+                Pop-Location
+                Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+            }
+        }
+
+        It "detects renamed files (diff-filter includes R)" {
+            $tmp = New-TempDir
+            try {
+                Initialize-GitRepoWithRemote -Dir $tmp
+                Push-Location $tmp
+                "content" | Set-Content "original.txt"
+                git add original.txt
+                git commit --quiet -m "Add original"
+                git push --quiet origin main
+
+                git checkout --quiet -b feature-rename
+                git mv original.txt renamed.txt
+                git commit --quiet -m "Rename file"
+
+                $result = & pwsh -NoProfile -File $Script -Json 2>&1
+                $LASTEXITCODE | Should -Be 0
+                $json = $result | ConvertFrom-Json
+                $json.changed_files | Should -Contain "renamed.txt"
+            } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -262,6 +318,30 @@ Describe "detect-changed-files.ps1" {
     # ──────────────────────────────────────────────
 
     Describe "Default branch detection" {
+        It "detects origin/main as default branch" {
+            $tmp = New-TempDir
+            try {
+                Initialize-GitRepoWithRemote -Dir $tmp
+                Push-Location $tmp
+
+                # Unset symbolic-ref to force fallback
+                git remote set-head origin --delete 2>$null
+
+                git checkout --quiet -b test-branch
+                "test" | Set-Content "test-file.txt"
+                git add test-file.txt
+                git commit --quiet -m "Add test file"
+
+                $result = & pwsh -NoProfile -File $Script -Json 2>&1
+                $LASTEXITCODE | Should -Be 0
+                $json = $result | ConvertFrom-Json
+                $json.default_branch | Should -Be "main"
+            } finally {
+                Pop-Location
+                Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+            }
+        }
+
         It "falls back to Mode B when no remote default branch found" {
             $tmp = New-TempDir
             try {
@@ -274,8 +354,8 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 0
                 $json = $result | ConvertFrom-Json
                 $json.mode | Should -Match "Working directory changes"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -316,8 +396,8 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 0
                 $json = $result | ConvertFrom-Json
                 $json.default_branch | Should -Be "master"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -343,8 +423,8 @@ Describe "detect-changed-files.ps1" {
                 $json.PSObject.Properties.Name | Should -Contain "default_branch"
                 $json.PSObject.Properties.Name | Should -Contain "mode"
                 $json.PSObject.Properties.Name | Should -Contain "changed_files"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -366,8 +446,8 @@ Describe "detect-changed-files.ps1" {
                 $result = & pwsh -NoProfile -File $Script 2>&1
                 $LASTEXITCODE | Should -Be 0
                 ($result -join "`n") | Should -Match "file with spaces.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -386,8 +466,8 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 0
                 $json = $result | ConvertFrom-Json
                 $json.changed_files | Should -Contain "deep/nested/path/file.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -413,8 +493,8 @@ Describe "detect-changed-files.ps1" {
                 $json.changed_files | Should -Contain "keep.txt"
                 $json.changed_files | Should -Contain "added.txt"
                 $json.changed_files | Should -Not -Contain "remove.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -442,8 +522,8 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 0
                 ($result -join "`n") | Should -Match "Working directory changes"
                 ($result -join "`n") | Should -Match "detached.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -470,8 +550,8 @@ Describe "detect-changed-files.ps1" {
                 $text | Should -Match "MODE:"
                 $text | Should -Match "CHANGED_FILES:"
                 $text | Should -Match "formatted.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -496,8 +576,26 @@ Describe "detect-changed-files.ps1" {
                 $LASTEXITCODE | Should -Be 0
                 $json = $result | ConvertFrom-Json
                 $json.branch | Should -Be "my-feature-123"
-                Pop-Location
             } finally {
+                Pop-Location
+                Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+            }
+        }
+
+        It "branch field shows current branch on default branch (Mode B)" {
+            $tmp = New-TempDir
+            try {
+                Initialize-GitRepo -Dir $tmp
+                Push-Location $tmp
+                "change" | Set-Content "file.txt"
+                git add file.txt
+
+                $result = & pwsh -NoProfile -File $Script -Json 2>&1
+                $LASTEXITCODE | Should -Be 0
+                $json = $result | ConvertFrom-Json
+                $json.branch | Should -Be "main"
+            } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -526,8 +624,8 @@ Describe "detect-changed-files.ps1" {
                 $json.changed_files | Should -Contain "file (1).txt"
                 $json.changed_files | Should -Contain "file's.txt"
                 $json.changed_files | Should -Contain "file&more.txt"
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }
@@ -549,8 +647,8 @@ Describe "detect-changed-files.ps1" {
                 $json = $result | ConvertFrom-Json
                 $json.changed_files.Count | Should -Be 1
                 $json.changed_files[0] | Should -Match 'quote'
-                Pop-Location
             } finally {
+                Pop-Location
                 Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
             }
         }

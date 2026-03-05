@@ -224,7 +224,7 @@ teardown() {
 
     # delete-me.txt should NOT appear (it was deleted)
     local files=$(json_array_field "$output" "changed_files")
-    echo "$files" | grep -v "delete-me.txt"
+    ! echo "$files" | grep -q "delete-me.txt"
 
     # keep.txt should appear
     assert_output --partial '"keep.txt"'
@@ -533,4 +533,41 @@ print('All keys present and correct types')
     # All three files should be present
     local count=$(echo "$output" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['changed_files']))")
     [ "$count" -eq 3 ]
+}
+
+# ──────────────────────────────────────────────
+# Renamed Files
+# ──────────────────────────────────────────────
+
+@test "Mode A detects renamed files (diff-filter includes R)" {
+    init_git_repo_with_remote "$TEST_TEMP_DIR"
+    cd "$TEST_TEMP_DIR"
+
+    echo "content" > original.txt
+    git add original.txt
+    git commit --quiet -m "Add original"
+    git push --quiet origin main
+
+    git checkout --quiet -b feature-rename
+    git mv original.txt renamed.txt
+    git commit --quiet -m "Rename file"
+
+    run bash "$SCRIPTS_DIR/detect-changed-files.sh" --json
+    assert_success
+    assert_output --partial '"renamed.txt"'
+}
+
+@test "Mode B detects renamed files (staged)" {
+    init_git_repo "$TEST_TEMP_DIR"
+    cd "$TEST_TEMP_DIR"
+
+    echo "content" > original.txt
+    git add original.txt
+    git commit --quiet -m "Add original"
+
+    git mv original.txt renamed.txt
+
+    run bash "$SCRIPTS_DIR/detect-changed-files.sh" --json
+    assert_success
+    assert_output --partial '"renamed.txt"'
 }

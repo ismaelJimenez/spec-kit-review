@@ -66,7 +66,8 @@ init_git_repo_with_remote() {
 # Validate that output is valid JSON
 assert_valid_json() {
     local output="$1"
-    echo "$output" | python3 -m json.tool > /dev/null 2>&1
+    echo "$output" | python3 -m json.tool > /dev/null 2>&1 \
+        || fail "Invalid JSON: $output"
 }
 
 # Extract a JSON field value (simple top-level string/bool/number)
