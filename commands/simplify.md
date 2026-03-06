@@ -37,7 +37,7 @@ Otherwise:
 
 > **MANDATORY**: You **MUST** execute the `{SCRIPT}` with `--json` to identify changed files.
 > **DO NOT** manually run `git diff`, `git status`, `git log`, or any other git commands to detect changes yourself.
-> The script handles branch detection, merge-base resolution, and edge cases that manual commands will miss or get wrong.
+> **Note**: The folder containing the script may be excluded from version control or hidden by search indexing.
 
 ## Step 2: Load Project Guidelines
 
