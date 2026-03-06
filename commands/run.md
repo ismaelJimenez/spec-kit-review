@@ -25,11 +25,11 @@ Orchestrate a comprehensive PR review by running specialized review agents again
 
 ## Step 1: Git Diff Auto-Detection
 
-> **MANDATORY**: You **MUST** execute the `detect-changed-files` script to identify changed files.
+> **MANDATORY**: You **MUST** execute the `{SCRIPT}` to identify changed files.
 > **DO NOT** manually run `git diff`, `git status`, `git log`, or any other git commands to detect changes yourself.
 > The script handles branch detection, merge-base resolution, and edge cases that manual commands will miss or get wrong. If the script fails and you fall back, note it in the Review Scope field: "Fallback: manual detection (script error: <reason>)".
 
-Run the `detect-changed-files` script with `--json` and parse the JSON output to populate **CHANGED_FILES**. Also capture **MODE** (e.g., branch diff, working tree) for the Review Scope field in the final report.
+Run the ``{SCRIPT}` with `--json` and parse the JSON output to populate **CHANGED_FILES**. Also capture **MODE** (e.g., branch diff, working tree) for the Review Scope field in the final report.
 ---
 
 ## Step 2: Load Context
