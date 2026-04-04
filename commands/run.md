@@ -104,24 +104,24 @@ Run a comprehensive pull request review using multiple specialized agents, each 
 
 **Full review (default):**
 ```
-/speckit.review
+/speckit.review.run
 ```
 
 **Specific aspects:**
 ```
-/speckit.review tests errors
+/speckit.review.run tests errors
 # Reviews only test coverage and error handling
 
-/speckit.review comments
+/speckit.review.run comments
 # Reviews only code comments
 
-/speckit.review simplify
+/speckit.review.run simplify
 # Simplifies code after passing review
 ```
 
 **Parallel review:**
 ```
-/speckit.review all parallel
+/speckit.review.run all parallel
 # Launches all agents in parallel
 ```
 

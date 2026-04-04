@@ -4,7 +4,7 @@ Post-implementation code review with specialized agents for code quality, commen
 
 ## Features
 
-- **Coordinator** (`/speckit.review`): Orchestrates all agents, produces a consolidated report
+- **Coordinator** (`/speckit.review.run`): Orchestrates all agents, produces a consolidated report
 - **Code Reviewer** (`/speckit.review.code`): Project guideline compliance, bug detection, code quality
 - **Comment Analyzer** (`/speckit.review.comments`): Comment accuracy, documentation completeness, comment rot
 - **Test Analyzer** (`/speckit.review.tests`): Behavioral coverage, critical gap identification, test resilience
@@ -19,7 +19,7 @@ Post-implementation code review with specialized agents for code quality, commen
 specify extension add review
 
 # Or from repository directly
-specify extension add review --from https://github.com/ismaelJimenez/spec-kit-review/archive/refs/tags/v1.0.0.zip
+specify extension add review --from https://github.com/ismaelJimenez/spec-kit-review/archive/refs/tags/v1.0.1.zip
 
 # Local development
 specify extension add --dev /path/to/spec-kit-review
@@ -30,7 +30,7 @@ Verify installation:
 ```bash
 specify extension list
 # Should show:
-#  ✓ Review Extension (v1.0.0)
+#  ✓ Review Extension (v1.0.1)
 #     Post-implementation comprehensive code review with specialized agents for code quality, comments, tests, error handling, type design, and simplification.
 #     Commands: 7 | Hooks: 1 | Status: Enabled
 ```
@@ -42,7 +42,7 @@ specify extension list
 Run all specialized agents against your changes and get a consolidated report:
 
 ```
-/speckit.review
+/speckit.review.run
 ```
 
 All commands (coordinator and individual agents) use the built-in `detect-changed-files` script to automatically identify what to review when no files are specified:
@@ -52,8 +52,8 @@ All commands (coordinator and individual agents) use the built-in `detect-change
 You can skip the script entirely by telling the agent what to review:
 
 ```
-/speckit.review only staged changes
-/speckit.review only files in src/utils/
+/speckit.review.run only staged changes
+/speckit.review.run only files in src/utils/
 ```
 
 ### Targeted Review
@@ -61,9 +61,9 @@ You can skip the script entirely by telling the agent what to review:
 Run only specific agents by passing aspect names:
 
 ```
-/speckit.review tests errors      # Only test and error handling analysis
-/speckit.review code              # Only code quality review
-/speckit.review comments simplify # Only comment analysis and simplification
+/speckit.review.run tests errors      # Only test and error handling analysis
+/speckit.review.run code              # Only code quality review
+/speckit.review.run comments simplify # Only comment analysis and simplification
 ```
 
 Valid aspects: `code`, `comments`, `tests`, `errors`, `types`, `simplify`, `all`
@@ -73,8 +73,8 @@ Valid aspects: `code`, `comments`, `tests`, `errors`, `types`, `simplify`, `all`
 By default agents run sequentially so you can act on each report as it arrives. Add `parallel` to launch all agents simultaneously for faster results:
 
 ```
-/speckit.review all parallel      # Full review, all agents in parallel
-/speckit.review tests errors parallel  # Parallel targeted review
+/speckit.review.run all parallel      # Full review, all agents in parallel
+/speckit.review.run tests errors parallel  # Parallel targeted review
 ```
 
 Parallel mode is useful for comprehensive reviews where you want all findings at once rather than incremental feedback.
@@ -117,15 +117,15 @@ If project-specific guidelines exist (`.specify/memory/constitution.md`, `CLAUDE
 
 ## Token Usage
 
-> **Heads up:** A full coordinated review (`/speckit.review`) dispatches 6 specialized agents, each of which reads the changed files independently. This can be token-intensive on larger PRs. To reduce costs, run targeted reviews (`/speckit.review code errors`) instead of the full suite.
+> **Heads up:** A full coordinated review (`/speckit.review.run`) dispatches 6 specialized agents, each of which reads the changed files independently. This can be token-intensive on larger PRs. To reduce costs, run targeted reviews (`/speckit.review.run code errors`) instead of the full suite.
 
 ## Recommended Workflow
 
 ```
 1. Implement changes:       /speckit.implement
-2. Run full review:         /speckit.review
+2. Run full review:         /speckit.review.run
 3. Fix critical issues
-4. Re-run targeted review:  /speckit.review code errors
+4. Re-run targeted review:  /speckit.review.run code errors
 5. Verify fixes resolved
 6. Create PR
 ```
@@ -136,8 +136,8 @@ If you also use the [Verify Extension](https://github.com/ismaelJimenez/spec-kit
 
 ```
 1. Implement changes:       /speckit.implement
-2. Verify spec alignment:   /speckit.verify
-3. Run PR review:           /speckit.review
+2. Verify spec alignment:   /speckit.verify.run
+3. Run PR review:           /speckit.review.run
 4. Fix issues and iterate
 ```
 
@@ -152,6 +152,10 @@ The verify extension validates that your implementation matches specification ar
 1. Check extension is installed: `specify extension list`
 2. Restart AI agent
 3. Reinstall extension: `specify extension add review`
+
+### Issue: `Validation Error: Invalid alias 'speckit.review'`
+
+**Solution:** Upgrade to v1.0.1 or later and invoke the coordinator with `/speckit.review.run`. Spec Kit now enforces three-segment alias names, so `/speckit.review` is no longer accepted by the validator.
 
 ### Issue: "Not a git repository" error
 
@@ -178,4 +182,4 @@ MIT License — see [LICENSE](LICENSE) file
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
-Extension Version: 1.0.0 · Spec Kit: >=0.1.0
+Extension Version: 1.0.1 · Spec Kit: >=0.1.0
