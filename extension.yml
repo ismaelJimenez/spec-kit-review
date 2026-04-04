@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "review"
   name: "Review Extension"
-  version: "1.0.0"
+  version: "1.0.1"
   description: "Post-implementation comprehensive code review with specialized agents for code quality, comments, tests, error handling, type design, and simplification."
   author: "ismaelJimenez"
   repository: "https://github.com/ismaelJimenez/spec-kit-review"
@@ -35,7 +35,6 @@ provides:
     - name: "speckit.review.run"
       file: "commands/run.md"
       description: "Comprehensive code review using specialized agents"
-      aliases: ["speckit.review"]
     - name: "speckit.review.code"
       file: "commands/code.md"
       description: "General code quality review — project guideline compliance, bug detection, code quality"
