@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: "review"
   name: "Review Extension"
-  version: "1.0.1"
+  version: "1.0.2"
   description: "Post-implementation comprehensive code review with specialized agents for code quality, comments, tests, error handling, type design, and simplification."
   author: "ismaelJimenez"
   repository: "https://github.com/ismaelJimenez/spec-kit-review"
@@ -24,11 +24,15 @@ provides:
       required: false
 
   scripts:
-    - name: "detect-changed-files.sh"
+    - name: "detect-changed-files"
       file: "scripts/bash/detect-changed-files.sh"
+      description: "Detect files changed on the current branch (bash)"
+      runtimes: ["bash"]
       executable: true
-    - name: "detect-changed-files.ps1"
+    - name: "detect-changed-files-powershell"
       file: "scripts/powershell/detect-changed-files.ps1"
+      description: "Detect files changed on the current branch (PowerShell)"
+      runtimes: ["powershell"]
       executable: true
 
   commands:
