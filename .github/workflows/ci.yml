@@ -133,6 +133,64 @@ jobs:
               elif cmd_file:
                   print(f"✅ Command file '{cmd_file}' exists")
 
+          # --- Artifact naming convention for templates/scripts: ^[a-z0-9-]+$ ---
+          # These are plain slugs, not file names: the path goes in 'file:'.
+          # spec-kit >=1.0.0 rejects a name with a dot (e.g. 'foo.sh') with
+          # "Invalid script name ... must be lowercase alphanumeric with
+          # hyphens only", which blocks installation outright.
+          artifact_pattern = r'^[a-z0-9-]+$'
+          for section, singular in (('templates', 'template'), ('scripts', 'script')):
+              entries = provides.get(section) or []
+              if not isinstance(entries, list):
+                  errors.append(f"provides.{section} must be a list")
+                  continue
+              seen = set()
+              for entry in entries:
+                  if not isinstance(entry, dict):
+                      errors.append(f"Each entry in provides.{section} must be a mapping")
+                      continue
+                  name = entry.get('name', '')
+                  if not name or not isinstance(name, str):
+                      errors.append(f"Entry in provides.{section} missing a string 'name'")
+                      continue
+                  if not re.match(artifact_pattern, name):
+                      errors.append(
+                          f"{singular.capitalize()} name '{name}' must match ^[a-z0-9-]+$ "
+                          f"(a plain slug, not a file name: the path belongs in 'file:')"
+                      )
+                  elif name in seen:
+                      errors.append(f"Duplicate {singular} name '{name}' in provides.{section}")
+                  else:
+                      seen.add(name)
+                      print(f"✅ {singular.capitalize()} '{name}' follows naming convention")
+
+                  entry_file = entry.get('file', '')
+                  if not entry_file:
+                      errors.append(f"{singular.capitalize()} '{name}' missing 'file'")
+                  elif not os.path.isfile(entry_file):
+                      errors.append(f"{singular.capitalize()} file '{entry_file}' referenced in manifest does not exist")
+                  else:
+                      print(f"✅ {singular.capitalize()} file '{entry_file}' exists")
+
+                  runtimes = entry.get('runtimes')
+                  if runtimes is not None:
+                      valid_runtimes = {'bash', 'powershell', 'python'}
+                      if not isinstance(runtimes, list) or not all(isinstance(r, str) for r in runtimes):
+                          errors.append(f"Runtimes for {singular} '{name}' must be a list of strings")
+                      else:
+                          invalid = sorted(set(runtimes) - valid_runtimes)
+                          if invalid:
+                              errors.append(
+                                  f"Invalid runtimes {invalid} for {singular} '{name}': "
+                                  f"must be one of {sorted(valid_runtimes)}"
+                              )
+
+                  if 'strategy' in entry:
+                      errors.append(
+                          f"{singular.capitalize()} '{name}' must not set 'strategy': "
+                          f"extension-provided artifacts always resolve as 'replace'"
+                      )
+
           # --- Config template existence ---
           configs = provides.get('config', [])
           for cfg in configs:

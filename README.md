@@ -19,7 +19,7 @@ Post-implementation code review with specialized agents for code quality, commen
 specify extension add review
 
 # Or from repository directly
-specify extension add review --from https://github.com/ismaelJimenez/spec-kit-review/archive/refs/tags/v1.0.1.zip
+specify extension add review --from https://github.com/ismaelJimenez/spec-kit-review/archive/refs/tags/v1.0.2.zip
 
 # Local development
 specify extension add --dev /path/to/spec-kit-review
@@ -30,7 +30,7 @@ Verify installation:
 ```bash
 specify extension list
 # Should show:
-#  ✓ Review Extension (v1.0.1)
+#  ✓ Review Extension (v1.0.2)
 #     Post-implementation comprehensive code review with specialized agents for code quality, comments, tests, error handling, type design, and simplification.
 #     Commands: 7 | Hooks: 1 | Status: Enabled
 ```
@@ -156,6 +156,10 @@ The verify extension validates that your implementation matches specification ar
 ### Issue: `Validation Error: Invalid alias 'speckit.review'`
 
 **Solution:** Upgrade to v1.0.1 or later and invoke the coordinator with `/speckit.review.run`. Spec Kit now enforces three-segment alias names, so `/speckit.review` is no longer accepted by the validator.
+
+### Issue: `Validation Error: Invalid script name 'detect-changed-files.sh'`
+
+**Solution:** Upgrade to v1.0.2 or later. Spec Kit 1.0.0 started validating `provides.scripts` entries, where `name` must be a plain slug (`^[a-z0-9-]+$`) and the path belongs in `file:`. Versions up to v1.0.1 shipped the file name in `name`, so installing them on Spec Kit 1.0.x fails before any command is registered.
 
 ### Issue: "Not a git repository" error
 

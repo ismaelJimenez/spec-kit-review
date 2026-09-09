@@ -5,6 +5,17 @@ All notable changes to this extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-09-09
+
+### Fixed
+
+- `provides.scripts[].name` now uses plain slugs (`detect-changed-files`, `detect-changed-files-powershell`) instead of file names. Spec Kit 1.0.x validates these entries against `^[a-z0-9-]+$`, so the previous `detect-changed-files.sh` / `detect-changed-files.ps1` values failed with `Validation Error: Invalid script name` and blocked installation entirely (#4). Script paths and command frontmatter are unchanged.
+
+### Added
+
+- `runtimes` and `description` metadata on both `provides.scripts` entries
+- CI manifest validation for `provides.scripts` and `provides.templates`: slug naming, duplicate names, `file:` existence, valid `runtimes`, and the non-authorable `strategy` key
+
 ## [1.0.1] - 2026-04-04
 
 ### Fixed
